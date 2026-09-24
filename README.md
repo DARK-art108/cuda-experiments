@@ -5,13 +5,17 @@ A collection of CUDA and C++ GPU programming experiments, running on cloud GPUs 
 ## Structure
 
 ```
-cuda-experiments/
-├── modal_run.py          # Generic Modal runner (run any .cu or .cpp)
-├── vector_add.cu         # Vector addition — standalone (has main)
+cuda-programs/
 ├── cuda/
-│   └── vector_add.cu     # Vector addition — solve() style
-└── cpp/
-    └── sum.cpp           # C++ array sum example
+│   ├── modal_run.py      # Generic Modal runner (run any .cu or .cpp)
+│   ├── vector_add.cu     # Vector addition — standalone (has main)
+│   └── silu.cpp          # SiLU activation kernel — standalone (has main)
+├── cpp/
+│   └── sum.cpp           # C++ array sum example
+└── templates/            # local competitive-programming templates
+    ├── template.cpp
+    ├── main.cpp
+    └── input.txt
 ```
 
 ## Running on Modal GPU
@@ -19,16 +23,29 @@ cuda-experiments/
 Any `.cu` or `.cpp` file can be run on a cloud T4 GPU with a single command:
 
 ```bash
-modal run modal_run.py --file <path-to-file>
+modal run cuda/modal_run.py --file <path-to-file>
 ```
 
 ### Examples
 
 ```bash
-modal run modal_run.py --file vector_add.cu
-modal run modal_run.py --file cuda/vector_add.cu
-modal run modal_run.py --file cpp/sum.cpp
+modal run cuda/modal_run.py --file cuda/vector_add.cu
+modal run cuda/modal_run.py --file cuda/silu.cpp
+modal run cuda/modal_run.py --file cpp/sum.cpp
 ```
+
+### How the compiler is picked
+
+The runner decides by **content**, not extension:
+
+| Source contains | Compiler | Example |
+|---|---|---|
+| `cuda_runtime.h`, `__global__`, `<<<`, `cooperative_groups`, `cuda/pipeline`, `cudaMalloc`, … | `nvcc -arch=native` (a `.cpp` file also gets `-x cu`) | `cuda/silu.cpp`, `cuda/vector_add.cu` |
+| nothing CUDA | `g++ -std=c++20` | `cpp/sum.cpp` |
+
+So a CUDA kernel written in a `.cpp` file runs exactly like a `.cu` file — no renaming needed.
+`-arch=native` compiles for whatever GPU the container was given (T4 → sm_75), which is what
+makes `<cuda/pipeline>` / `cooperative_groups` usable (they require sm_70+).
 
 ## Writing Compatible Files
 
@@ -142,6 +159,6 @@ modal setup     # authenticate once
 
 | File | Description |
 |------|-------------|
-| `vector_add.cu` | Element-wise addition of two float arrays on GPU |
-| `cuda/vector_add.cu` | Same, in competitive-style `solve()` format |
+| `cuda/vector_add.cu` | Element-wise addition of two float arrays on GPU |
+| `cuda/silu.cpp` | SiLU (`x·sigmoid(x)`) activation over a 128×1027 matrix, verified element-wise |
 | `cpp/sum.cpp` | Array sum in standard C++ |

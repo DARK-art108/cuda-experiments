@@ -8,7 +8,9 @@
   // Make VS Code's C/C++ extension stay out of the way if it is ever installed.
   "C_Cpp.intelliSenseEngine": "disabled",
   "files.associations": {
-    "*.cu": "cuda-cpp"
+    // 'cuda-cpp' only exists with the MS C/C++ extension; map to cpp so clangd attaches
+    "*.cu": "cpp",
+    "*.cuh": "cpp"
   },
   "editor.formatOnSave": false
 }

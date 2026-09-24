@@ -1,31 +1,46 @@
-#include <cstdio>
-#include <cmath>
+#include <iostream>
 #include <cuda_runtime.h>
+#include <cuda/pipeline>
+#include <cooperative_groups.h>
+#include <math.h>
+
+
+namespace cg = cooperative_groups;
 
 __global__
-void SiLU(float* matrix, int m, int n) {
+void SiLU(float* matrix, int m, int n){
 
-    unsigned int row = blockIdx.x;
-    float* row_ptr = matrix + row * n;
-    float4* matrix4 = reinterpret_cast<float4*>(row_ptr);
-    int vec_len = n / 4;
+	unsigned int row = blockIdx.x;
+	float* row_ptr = matrix + row * n;
 
-    for (int col = threadIdx.x; col < vec_len; col += blockDim.x) {
-        float4 el = matrix4[col];
-        // f(x) = x / (1 + e^-x)
-        matrix4[col] = make_float4(
-            el.x / (1.0f + expf(-el.x)),
-            el.y / (1.0f + expf(-el.y)),
-            el.z / (1.0f + expf(-el.z)),
-            el.w / (1.0f + expf(-el.w))
-        );
-    }
+	// float4 loads require a 16-byte aligned address: with n = 1027 the rows are
+	// only 4-byte aligned, so the vector path is used only when it is safe.
+	bool vec_ok = (n % 4 == 0) &&
+	              ((size_t)row_ptr % 16 == 0);
+	int vec_end = vec_ok ? (n / 4) * 4 : 0;
 
-    for (int col = vec_len * 4 + threadIdx.x; col < n; col += blockDim.x) {
-        float x = row_ptr[col];
-        row_ptr[col] = x / (1.0f + expf(-x));
-    }
+	if (vec_ok) {
+		float4* matrix4 = reinterpret_cast<float4*>(row_ptr);
+
+		for(int col=threadIdx.x; col<n/4;col+=blockDim.x){
+			float4 elements = matrix4[col];
+	        //f(x) = x/(1 + e^-x)
+			matrix4[col] = make_float4(
+				elements.x/(1.0f+expf(-elements.x)),
+				elements.y/(1.0f+expf(-elements.y)),
+				elements.z/(1.0f+expf(-elements.z)),
+				elements.w/(1.0f+expf(-elements.w))
+				);
+		}
+	}
+
+	for(int col=vec_end+threadIdx.x;col<n;col+=blockDim.x){
+		float element = row_ptr[col];
+		row_ptr[col] = element/(1.0f+expf(-element));
+	}
+
 }
+
 
 extern "C" void solve(float* d_matrix, int m, int n) {
     int threads = 256;
