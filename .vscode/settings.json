@@ -1,0 +1,14 @@
+{
+  // C++ IntelliSense via clangd (uses compile_commands.json at the project root).
+  "clangd.path": "/opt/homebrew/opt/llvm/bin/clangd",
+  "clangd.arguments": [
+    "--background-index",
+    "--header-insertion=never"
+  ],
+  // Make VS Code's C/C++ extension stay out of the way if it is ever installed.
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "files.associations": {
+    "*.cu": "cuda-cpp"
+  },
+  "editor.formatOnSave": false
+}

@@ -1,0 +1,26 @@
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "Mac-GCC16",
+      "compilerPath": "/opt/homebrew/bin/g++-16",
+      "compilerArgs": ["-std=c++20"],
+      "intelliSenseMode": "macos-gcc-arm64",
+      "cStandard": "c17",
+      "cppStandard": "c++20",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/opt/homebrew/Cellar/gcc/16.2.0/include/c++/16",
+        "/opt/homebrew/Cellar/gcc/16.2.0/include/c++/16/aarch64-apple-darwin24",
+        "/opt/homebrew/Cellar/gcc/16.2.0/include/c++/16/backward",
+        "/opt/homebrew/Cellar/gcc/16.2.0/lib/gcc/current/gcc/aarch64-apple-darwin24/16/include",
+        "/opt/homebrew/Cellar/gcc/16.2.0/lib/gcc/current/gcc/aarch64-apple-darwin24/16/include-fixed",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"
+      ],
+      "defines": [
+        "__GLIBCXX_TYPE_INT_N_0=__int128",
+        "__GLIBCXX_BITSIZE_INT_N_0=128"
+      ]
+    }
+  ]
+}
