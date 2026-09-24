@@ -11,9 +11,7 @@ void SilU(float* matrix, int m, int n){
 
 	unsigned int row = blockIdx.x;
 	float* row_ptr = matrix + row * n;
-
-	// float4 loads require a 16-byte aligned address: with n = 1027 the rows are
-	// only 4-byte aligned, so the vector path is used only when it is safe.
+    // check for 4 floats and 16 byte alignment
 	bool vec_ok = (n % 4 == 0) &&
 	              (reinterpret_cast<uintptr_t>(row_ptr) % sizeof(float4) == 0);
 	int vec_end = vec_ok ? (n / 4) * 4 : 0;
