@@ -53,11 +53,11 @@ Hardware `LD.E.128` instructions **strictly enforce 16-byte memory alignment**. 
 $$\text{Address}(\text{row}, 0) = \text{base} + \text{row} \times N \times \text{sizeof}(\text{float})$$
 
 For $N = 1027$:
-- $\text{Row } 0: 0 \times 4108 \text{ B} = 0 \text{ B} \equiv 0 \pmod{16}$ *(Aligned)*
-- $\text{Row } 1: 1 \times 4108 \text{ B} = 4108 \text{ B} \equiv 12 \pmod{16}$ *(Misaligned)*
-- $\text{Row } 2: 2 \times 4108 \text{ B} = 8216 \text{ B} \equiv 8 \pmod{16}$ *(Misaligned)*
-- $\text{Row } 3: 3 \times 4108 \text{ B} = 12324 \text{ B} \equiv 4 \pmod{16}$ *(Misaligned)*
-- $\text{Row } 4: 4 \times 4108 \text{ B} = 16432 \text{ B} \equiv 0 \pmod{16}$ *(Aligned)*
+- **Row 0**: $0 \times 4108\text{ B} = 0\text{ B} \equiv 0 \pmod{16}$ *(Aligned)*
+- **Row 1**: $1 \times 4108\text{ B} = 4108\text{ B} \equiv 12 \pmod{16}$ *(Misaligned)*
+- **Row 2**: $2 \times 4108\text{ B} = 8216\text{ B} \equiv 8 \pmod{16}$ *(Misaligned)*
+- **Row 3**: $3 \times 4108\text{ B} = 12324\text{ B} \equiv 4 \pmod{16}$ *(Misaligned)*
+- **Row 4**: $4 \times 4108\text{ B} = 16432\text{ B} \equiv 0 \pmod{16}$ *(Aligned)*
 
 Naively executing `reinterpret_cast<float4*>(row_ptr)` across unaligned rows triggers a hardware **Misaligned Address Exception** (`XID 13 / XID 43`), aborting the CUDA context and leaving destination buffers zeroed.
 
@@ -104,7 +104,7 @@ A naive matrix multiplication kernel accesses global DRAM for every multiply-acc
 
 The tiled kernel leverages on-chip **Shared Memory SRAM** (100+ TB/s aggregate bandwidth) to stage $T \times T$ sub-matrices:
 
-$$\text{Global Memory Access Reduction Factor} = T$$
+$$\text{Memory Access Reduction Factor} = T$$
 
 ```cuda
 __global__ void matmul_tiled(float *A, float *B, float *C, int N) {
@@ -159,7 +159,7 @@ Local development on Apple Silicon arm64 cannot natively compile modern CUDA dev
    - **Standard Host C++ (`.cpp`)**: Compiled via `g++ -std=c++20 -O2`.
 
 2. **Native Architecture Specialization (`-arch=native`)**:
-   Automatically detects the physical GPU attached to the container (e.g., Turing sm_75 on Tesla T4). This allows modern CUDA C++ headers like `<cuda/pipeline>` and `<cooperative_groups.h>` (which require $\ge \text{sm\_70}$) to compile without `#error` flags.
+   Automatically detects the physical GPU attached to the container (e.g., Turing `sm_75` on Tesla T4). This allows modern CUDA C++ headers like `<cuda/pipeline>` and `<cooperative_groups.h>` (which require architecture $\ge$ `sm_70`) to compile without `#error` flags.
 
 3. **Dual Execution Abstractions**:
    - **Standalone Binaries**: Detects `int main()` and executes the compiled binary directly.
@@ -239,7 +239,7 @@ For competitive programming and algorithmic prototyping, the local environment i
 
 ### Prerequisites
 
-- Python $\ge 3.12$
+- Python $\ge$ 3.12
 - [uv](https://docs.astral.sh/uv/) package manager
 - [Modal](https://modal.com) account
 
